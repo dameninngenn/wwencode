@@ -1,25 +1,71 @@
 #!/usr/bin/perl
 
 use strict;
-use warnings;
+use Dumpvalue;
 
-#sub character {
-#    my ($c) = @_;
-#    if ($c > 255) { return ''; }
-#    my $p = $codes->[$c]->[int(rand(@{$codes->[$c]}))];
-#    my $r = '';
-#    for (my $i = 0; $i < length($p); $i += 2) {
-#        my $j = hex(substr($p, $i, 2));
-#        $r .= $words->[$j] . ' ';
-#    }
-#    return $r;
-#}
+sub oct_hex {
+    my $org_num = shift;
+    my $hope_num = shift;
+    my $result_array = shift;
+    my $r_max = shift;
+    my $result_str_org = shift || undef;
+    my $r_num = shift || 0;
+    my $result_num_hex;
+    my $result_num_oct;
+
+    $r_num += 1;
+    # hex
+    my $result_str_hex = 'hex '.$result_str_org;
+    eval{
+        $result_num_hex = hex($org_num);
+    };
+
+    if($result_num_hex eq $hope_num) {
+        push(@$result_array,$result_str_hex);
+        return $result_array;
+    }
+
+    # oct
+    my $result_str_oct = 'oct '.$result_str_org;
+    eval{
+        $result_num_oct = oct($org_num);
+    };
+
+    if($result_num_oct eq $hope_num) {
+        push(@$result_array,$result_str_oct);
+        return $result_array;
+    }
+
+    if ($r_num > $r_max) {
+        return $result_array;
+    }
+    $result_array = oct_hex($result_num_hex,$hope_num,$result_array,$r_max,$result_str_hex,$r_num);
+    $result_array = oct_hex($result_num_oct,$hope_num,$result_array,$r_max,$result_str_oct,$r_num);
+
+    return $result_array;
+}
+
+sub get_hex_oct {
+    my $character = shift;
+
+    my $r_max = 10;
+    my @base_num = (10,11,12,13);
+
+    foreach (@base_num) {
+        my @result_array;
+        print 'base_num:'.$_,"\n";
+        my $result = oct_hex($_,$character,\@result_array,$r_max);
+        my $d = Dumpvalue->new();
+        $d->dumpValues($result);
+        $d->dumpValues(@result_array);
+    }
+}
 
 sub wwencode {
     my $text = shift;
     my $r = "";
     for (my $i = 0; $i < length($text); $i++) {
-        my $code = character(ord(substr($text, $i, 1)));
+        my $code = get_hex_oct(ord(substr($text, $i, 1)));
         if ($code ne '') {
             $r .= 'and print chr ' . $code;
         }
