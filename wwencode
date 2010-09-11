@@ -48,17 +48,23 @@ sub oct_hex {
 sub get_hex_oct {
     my $character = shift;
 
-    my $r_max = 10;
+    my $r_max = 5;
     my @base_num = (10,11,12,13);
 
-    foreach (@base_num) {
-        my @result_array;
-        print 'base_num:'.$_,"\n";
-        my $result = oct_hex($_,$character,\@result_array,$r_max);
-        my $d = Dumpvalue->new();
-        $d->dumpValues($result);
-        $d->dumpValues(@result_array);
+    my @result_array;
+    my %result;
+    while(!@result_array) {
+        foreach (@base_num) {
+            print 'base_num:'.$_,' char:'.$character."\n";
+            $result{$_} = oct_hex($_,$character,\@result_array,$r_max);
+        }
+        $r_max += 5;
     }
+    my $d = Dumpvalue->new();
+    #$d->dumpValues(%result);
+    #$d->dumpValues($result{11});
+    print $result{11}->[0],"\n";
+    #$d->dumpValues(@result_array);
 }
 
 sub wwencode {
