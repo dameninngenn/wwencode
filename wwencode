@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+#sub character {
+#    my ($c) = @_;
+#    if ($c > 255) { return ''; }
+#    my $p = $codes->[$c]->[int(rand(@{$codes->[$c]}))];
+#    my $r = '';
+#    for (my $i = 0; $i < length($p); $i += 2) {
+#        my $j = hex(substr($p, $i, 2));
+#        $r .= $words->[$j] . ' ';
+#    }
+#    return $r;
+#}
+
+sub wwencode {
+    my $text = shift;
+    my $r = "";
+    for (my $i = 0; $i < length($text); $i++) {
+        my $code = character(ord(substr($text, $i, 1)));
+        if ($code ne '') {
+            $r .= 'and print chr ' . $code;
+        }
+    }
+    return $r;
+}
+
+print "#!/usr/bin/werl\n";
+#print "print chr oct length q wWWWWW WWWWWWw ";
+print "WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw ";
+while (my $line = <>) {
+    print wwencode($line);
+}
+print "\n";
+
+1;
+
