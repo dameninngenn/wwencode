@@ -1,19 +1,52 @@
 #!/usr/bin/perl
 
 use strict;
+no warnings;
 use Dumpvalue;
 
+my @base_num  = (10,11,12,13);
+my %base_hash;
+$base_hash{10} = 'length q wWWWWW WWWWw ';
+$base_hash{11} = 'length q wWWWWW WWWWWw ';
+$base_hash{12} = 'length q wWWWWW WWWWWWw ';
+$base_hash{13} = 'length q Wwwwwww wwwwwwW ';
+
+sub get_min_token {
+    my $token_list = shift;
+    my $min_length;
+    my $min_key;
+    my $result_token;
+
+    foreach my $key (keys %$token_list) {
+        foreach (@{$token_list->{$key}}) {
+            unless($min_length) {
+                $min_length = length($_);
+                $min_key = $key;
+                $result_token = $_.$base_hash{$key};
+            }
+            if($min_length > length($_)) {
+                $min_length = length($_);
+                $min_key = $key;
+                $result_token = $_.$base_hash{$key};
+            }
+        }
+    }
+
+    return $result_token;
+}
+
 sub oct_hex {
-    my $org_num = shift;
-    my $hope_num = shift;
-    my $result_array = shift;
-    my $r_max = shift;
-    my $result_str_org = shift || undef;
-    my $r_num = shift || 0;
+    my $org_num         = shift;
+    my $hope_num        = shift;
+    my $result_array    = shift;
+    my $r_max           = shift;
+    my $result_str_org  = shift || undef;
+    my $r_num           = shift || 0;
     my $result_num_hex;
     my $result_num_oct;
 
     $r_num += 1;
+
     # hex
     my $result_str_hex = 'hex '.$result_str_org;
     eval{
@@ -39,32 +72,44 @@ sub oct_hex {
     if ($r_num > $r_max) {
         return $result_array;
     }
-    $result_array = oct_hex($result_num_hex,$hope_num,$result_array,$r_max,$result_str_hex,$r_num);
-    $result_array = oct_hex($result_num_oct,$hope_num,$result_array,$r_max,$result_str_oct,$r_num);
+    $result_array = oct_hex(
+        $result_num_hex,
+        $hope_num,
+        $result_array,
+        $r_max,
+        $result_str_hex,
+        $r_num
+    );
+    $result_array = oct_hex(
+        $result_num_oct,
+        $hope_num,
+        $result_array,
+        $r_max,
+        $result_str_oct,
+        $r_num
+    );
 
     return $result_array;
 }
 
 sub get_hex_oct {
     my $character = shift;
-
-    my $r_max = 5;
-    my @base_num = (10,11,12,13);
-
-    my @result_array;
+    my $r_max     = 10;
+    my $loop;
     my %result;
-    while(!@result_array) {
+
+    while(!$loop) {
         foreach (@base_num) {
-            print 'base_num:'.$_,' char:'.$character."\n";
+            my @result_array;
             $result{$_} = oct_hex($_,$character,\@result_array,$r_max);
+            $loop = @result_array;
         }
         $r_max += 5;
     }
-    my $d = Dumpvalue->new();
-    #$d->dumpValues(%result);
-    #$d->dumpValues($result{11});
-    print $result{11}->[0],"\n";
-    #$d->dumpValues(@result_array);
+
+    my $min_token = get_min_token(\%result); 
+
+    return $min_token;
 }
 
 sub wwencode {
@@ -79,12 +124,13 @@ sub wwencode {
     return $r;
 }
 
-print "#!/usr/bin/werl\n";
+print "#!/usr/bin/perl\n";
 #print "print chr oct length q wWWWWW WWWWWWw ";
 print "WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw ";
 while (my $line = <>) {
     print wwencode($line);
 }
+print "and WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw";
 print "\n";
 
 1;
