@@ -1,135 +1,158 @@
 #!/usr/bin/perl
 
 use strict;
-no warnings;
+use warnings;
 use Dumpvalue;
 
-my @base_num  = (10,11,12,13);
-my %base_hash;
-$base_hash{10} = 'length q wWWWWW WWWWw ';
-$base_hash{11} = 'length q wWWWWW WWWWWw ';
-$base_hash{12} = 'length q wWWWWW WWWWWWw ';
-$base_hash{13} = 'length q Wwwwwww wwwwwwW ';
-
-sub get_min_token {
-    my $token_list = shift;
-    my $min_length;
-    my $min_key;
-    my $result_token;
-
-    foreach my $key (keys %$token_list) {
-        foreach (@{$token_list->{$key}}) {
-            unless($min_length) {
-                $min_length = length($_);
-                $min_key = $key;
-                $result_token = $_.$base_hash{$key};
-            }
-            if($min_length > length($_)) {
-                $min_length = length($_);
-                $min_key = $key;
-                $result_token = $_.$base_hash{$key};
-            }
-        }
-    }
-
-    return $result_token;
-}
-
-sub oct_hex {
-    my $org_num         = shift;
-    my $hope_num        = shift;
-    my $result_array    = shift;
-    my $r_max           = shift;
-    my $result_str_org  = shift || undef;
-    my $r_num           = shift || 0;
-    my $result_num_hex;
-    my $result_num_oct;
-
-    $r_num += 1;
-
-    # hex
-    my $result_str_hex = 'hex '.$result_str_org;
-    eval{
-        $result_num_hex = hex($org_num);
-    };
-
-    if($result_num_hex eq $hope_num) {
-        push(@$result_array,$result_str_hex);
-        return $result_array;
-    }
-
-    # oct
-    my $result_str_oct = 'oct '.$result_str_org;
-    eval{
-        $result_num_oct = oct($org_num);
-    };
-
-    if($result_num_oct eq $hope_num) {
-        push(@$result_array,$result_str_oct);
-        return $result_array;
-    }
-
-    if ($r_num > $r_max) {
-        return $result_array;
-    }
-    $result_array = oct_hex(
-        $result_num_hex,
-        $hope_num,
-        $result_array,
-        $r_max,
-        $result_str_hex,
-        $r_num
-    );
-    $result_array = oct_hex(
-        $result_num_oct,
-        $hope_num,
-        $result_array,
-        $r_max,
-        $result_str_oct,
-        $r_num
-    );
-
-    return $result_array;
-}
-
-sub get_hex_oct {
-    my $character = shift;
-    my $r_max     = 10;
-    my $loop;
-    my %result;
-
-    while(!$loop) {
-        foreach (@base_num) {
-            my @result_array;
-            $result{$_} = oct_hex($_,$character,\@result_array,$r_max);
-            $loop = @result_array;
-        }
-        $r_max += 5;
-    }
-
-    my $min_token = get_min_token(\%result); 
-
-    return $min_token;
-}
+my %ascii_list = (
+    0 => 'wWwww wWwww wwwWWWw W wWWWWW WWWWWw ',
+    1 => 'wWwww wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    2 => 'wWwww wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    3 => 'wWwww wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    4 => 'wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    5 => 'wWwww wWwww wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    6 => 'wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    7 => 'wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    8 => 'wWwww wwwWWWw W wWWWWW WWWWw ',
+    9 => 'wWwww wwwWWWw W wWWWWW WWWWWw ',
+    10 => 'wWwww wwwWWWw W wWWWWW WWWWWWw ',
+    11 => 'wWwww wwwWWWw W Wwwwwww wwwwwwW ',
+    12 => 'wWwww wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    13 => 'wWwww wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    14 => 'wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    15 => 'wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    16 => 'wwwWW wwwWWWw W wWWWWW WWWWw ',
+    17 => 'wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    18 => 'wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    19 => 'wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    20 => 'wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    21 => 'wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    22 => 'wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    23 => 'wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    24 => 'wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    25 => 'wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    26 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    27 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    28 => 'wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    29 => 'wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    30 => 'wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    31 => 'wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    32 => 'wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    33 => 'wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    34 => 'wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    35 => 'wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    36 => 'wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    37 => 'wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    38 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    39 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    40 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    41 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    42 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    43 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    44 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    45 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    46 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    47 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    48 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    49 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    50 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    51 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    52 => 'wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    53 => 'wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    54 => 'wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    55 => 'wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    56 => 'wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    57 => 'wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    58 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    59 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    60 => 'wWwww wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    61 => 'wWwww wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    62 => 'wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    63 => 'wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    64 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    65 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    66 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    67 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    68 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    69 => 'wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    70 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    71 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    72 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    73 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    74 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    75 => 'wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    76 => 'wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    77 => 'wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    78 => 'wWwww wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    79 => 'wWwww wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    80 => 'wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    81 => 'wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    82 => 'wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    83 => 'wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    84 => 'wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    85 => 'wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    86 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    87 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    88 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    89 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    90 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    91 => 'wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    92 => 'wWwww wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    93 => 'wWwww wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    94 => 'wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    95 => 'wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    96 => 'wWwww wWwww wWwww wWwww wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    97 => 'wWwww wWwww wWwww wWwww wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    98 => 'wwwWW wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    99 => 'wwwWW wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    100 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    101 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    102 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    103 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    104 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    105 => 'wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    106 => 'wWwww wwwWW wwwWW wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    107 => 'wWwww wwwWW wwwWW wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    108 => 'wWwww wWwww wWwww wWwww wWwww wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    109 => 'wWwww wWwww wWwww wWwww wWwww wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    110 => 'wWwww wWwww wWwww wwwWW wWwww wWwww wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    111 => 'wWwww wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    112 => 'wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    113 => 'wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    114 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    115 => 'wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    116 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWw ',
+    117 => 'wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWW wWwww wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    118 => 'wwwWW wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    119 => 'wwwWW wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    120 => 'wWwww wWwww wWwww wwwWW wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    121 => 'wWwww wWwww wWwww wwwWW wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+    122 => 'wWwww wWwww wWwww wwwWW wWwww wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    123 => 'wWwww wWwww wWwww wwwWW wWwww wWwww wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    124 => 'wWwww wWwww wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWw ',
+    125 => 'wWwww wWwww wwwWW wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWw ',
+    126 => 'wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W wWWWWW WWWWWWw ',
+    127 => 'wWwww wWwww wwwWW wwwWW wwwWW wWwww wwwWW wwwWW wwwWW wwwWW wwwWWWw W Wwwwwww wwwwwwW ',
+);
 
 sub wwencode {
     my $text = shift;
     my $r = "";
     for (my $i = 0; $i < length($text); $i++) {
-        my $code = get_hex_oct(ord(substr($text, $i, 1)));
+        my $code = $ascii_list{ord(substr($text, $i, 1))};
         if ($code ne '') {
-            $r .= 'and print chr ' . $code;
+            $r .= 'WwWW WWwwWW WWww ' . $code;
         }
     }
     return $r;
 }
 
-print "#!/usr/bin/perl\n";
+#print "#!/usr/bin/perl\n";
 print "WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw ";
 while (my $line = <>) {
     print wwencode($line);
 }
-print "and WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw";
+print "WwWW WWwwWW WWww wWwww wwwWWWw W wWWWWW WWWWWWw";
 print "\n";
 
 1;
