@@ -4,12 +4,19 @@ use strict;
 no warnings;
 use Dumpvalue;
 
-my @base_num  = (10,11,12,13);
+my @base_num  = (10,11,12,13,14,15,16,17,18,19,20);
 my %base_hash;
 $base_hash{10} = 'length q wWWWWW WWWWw ';
 $base_hash{11} = 'length q wWWWWW WWWWWw ';
 $base_hash{12} = 'length q wWWWWW WWWWWWw ';
 $base_hash{13} = 'length q Wwwwwww wwwwwwW ';
+$base_hash{14} = 'length q Wwwwww w wwwwwwW ';
+$base_hash{15} = 'length q Wwwwww ww wwwwwwW ';
+$base_hash{16} = 'length q wWWWWW WWW WWWWWWw ';
+$base_hash{17} = 'length q wWWWWW WWWW WWWWWWw ';
+$base_hash{18} = 'length q wWWWWW WWWWW WWWWWWw ';
+$base_hash{19} = 'length q Wwwwww wwwwww wwwwwwW ';
+$base_hash{20} = 'length q Wwwwww wwwwwww wwwwwwW ';
 
 sub get_min_token {
     my $token_list = shift;
